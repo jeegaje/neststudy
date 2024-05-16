@@ -1,21 +1,20 @@
-import { IsDateString, IsNotEmpty } from "class-validator"
+import { IsDateString, IsEnum, IsNotEmpty } from "class-validator"
+import { StatusRental } from "../enum/status-rental.enum"
 
 export class CreateRentalDto {
     @IsNotEmpty()
     car_id: number
 
     @IsNotEmpty()
-    user_id: number
+    @IsDateString()
+    rent_date: Date
 
     @IsNotEmpty()
     @IsDateString()
-    rent_date: string
+    return_date: Date
 
     @IsNotEmpty()
-    @IsDateString()
-    return_date: string
-
-    @IsNotEmpty()
+    @IsEnum(StatusRental)
     status: string
 
     @IsNotEmpty()

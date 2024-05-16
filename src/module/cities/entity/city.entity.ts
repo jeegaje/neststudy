@@ -8,4 +8,8 @@ export class CityEntity implements City {
     code: string;
     @ApiProperty()
     name: string;
+    @ApiProperty()
+    latitude: number;
+    @ApiProperty()
+    longitude: number;
 }

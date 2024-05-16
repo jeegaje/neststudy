@@ -12,6 +12,7 @@ import { BaseController } from 'src/core/base.controller';
 import { City } from '@prisma/client';
 import { PaginationDto } from 'src/core/dto/pagination.dto';
 import { IdParam } from './dto/param.dto';
+import { RolesEnum } from 'src/core/enum/roles.enum';
 
 @Controller('cities')
 @ApiTags('City')
@@ -21,7 +22,7 @@ export class CitiesController extends BaseController {
   }
 
   @Post()
-  @Roles(['admin'])
+  @Roles([RolesEnum.ADMIN])
   @UseGuards(JwtAuthGuard, RolesGuard)
   @ApiCreatedResponse({ type: CityEntity })
   async create(
@@ -47,7 +48,7 @@ export class CitiesController extends BaseController {
   }
 
   @Post('/import/:id')
-  @Roles(['admin'])
+  @Roles([RolesEnum.ADMIN])
   @UseGuards(JwtAuthGuard, RolesGuard)
   async importCity(
     @Param('id') id: string,
@@ -147,7 +148,7 @@ export class CitiesController extends BaseController {
   }
 
   @Patch(':id')
-  @Roles(['admin'])
+  @Roles([RolesEnum.ADMIN])
   @UseGuards(JwtAuthGuard, RolesGuard)
   @ApiOkResponse({ type: CityEntity })
   async update(
@@ -175,7 +176,7 @@ export class CitiesController extends BaseController {
   }
 
   @Delete(':id')
-  @Roles(['admin'])
+  @Roles([RolesEnum.ADMIN])
   @UseGuards(JwtAuthGuard, RolesGuard)
   @ApiOkResponse({ type: CityEntity })
   async remove(

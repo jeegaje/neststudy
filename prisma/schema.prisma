@@ -24,17 +24,21 @@ model Article {
 }
 
 model User {
-  id       Int      @id @default(autoincrement())
-  username String   @unique
-  password String
-  role     String
-  rental   Rental[]
+  id              Int      @id @default(autoincrement())
+  username        String   @unique
+  password        String
+  role            String
+  activationToken String?  @unique
+  isActive        Boolean  @default(false)
+  rental          Rental[]
 }
 
 model City {
   id          Int      @id @default(autoincrement())
   code        String
   name        String
+  latitude    Float?
+  longitude    Float?
   rental      Rental[]
 }
 
@@ -59,4 +63,15 @@ model Rental {
   return_date DateTime
   status      String
   rent_cost   Int
+  payment     Payment?
+}
+
+model Payment {
+  id          Int       @id @default(autoincrement())
+  paymentType String
+  grossAmount Int
+  status      String
+  meta        Json
+  rental      Rental    @relation(fields: [rentalId], references: [id])
+  rentalId    Int       @unique
 }

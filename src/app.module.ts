@@ -9,29 +9,21 @@ import { UsersModule } from './module/users/users.module';
 import { AuthModule } from './module/auth/auth.module';
 import { CarsModule } from './module/cars/cars.module';
 import { RentalsModule } from './module/rentals/rentals.module';
+import { MailModule } from './module/mail/mail.module';
+import { PaymentModule } from './module/payment/payment.module';
 
 @Module({
   imports: [
-    ConfigModule.forRoot(),
-    // TypeOrmModule.forRootAsync({
-    //   imports: [ConfigModule],
-    //   inject: [ConfigService],
-    //   useFactory: (configService: ConfigService) => ({
-    //     type: 'postgres',
-    //     host: configService.get('DB_HOST'),
-    //     port: configService.get('DB_PORT'),
-    //     username: configService.get('DB_USERNAME'),
-    //     password: configService.get('DB_PASSWORD'),
-    //     database: configService.get('DB_NAME'),
-    //     entities: [join(process.cwd(), 'dist/**/*.entity.js')],
-    //     synchronize: true
-    //   })
-    // }),
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
     CitiesModule,
     UsersModule,
     AuthModule,
     CarsModule,
-    RentalsModule
+    RentalsModule,
+    MailModule,
+    PaymentModule
   ],
   controllers: [AppController],
   providers: [

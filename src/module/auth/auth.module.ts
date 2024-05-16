@@ -8,9 +8,10 @@ import { LocalStrategy } from './local.auth';
 import { AuthController } from './auth.controller';
 import { JwtStrategy } from '../../core/guards/jwt-auth/jwt.strategy';
 import { PrismaService } from 'src/core/services/prisma.service';
+import { MailModule } from '../mail/mail.module';
 
 @Module({
-    imports: [UsersModule, PassportModule, JwtModule.register({
+    imports: [UsersModule, PassportModule, MailModule, JwtModule.register({
         secret: 'secret',
         signOptions: { expiresIn: '360s' }
     })],

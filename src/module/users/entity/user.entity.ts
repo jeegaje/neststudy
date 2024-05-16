@@ -9,5 +9,9 @@ export class UserEntity implements User {
     @ApiProperty()
     password: string;
     @ApiProperty()
+    isActive: boolean;
+    @ApiProperty()
+    activationToken: string;
+    @ApiProperty()
     role: string;
 }

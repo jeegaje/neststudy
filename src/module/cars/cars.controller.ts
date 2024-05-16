@@ -11,6 +11,7 @@ import { BaseController } from 'src/core/base.controller';
 import { IdParam } from '../cities/dto/param.dto';
 import { PaginationDto } from 'src/core/dto/pagination.dto';
 import { Car } from '@prisma/client';
+import { RolesEnum } from 'src/core/enum/roles.enum';
 
 @Controller('cars')
 @ApiTags('Cars')
@@ -20,7 +21,7 @@ export class CarsController extends BaseController {
   }
 
   @Post()
-  @Roles(['admin'])
+  @Roles([RolesEnum.ADMIN])
   @UseGuards(JwtAuthGuard, RolesGuard)
   create(@Body() createCarDto: CreateCarDto) {
     return this.carsService.create(createCarDto);
@@ -98,7 +99,7 @@ export class CarsController extends BaseController {
   }
 
   @Patch(':id')
-  @Roles(['admin'])
+  @Roles([RolesEnum.ADMIN])
   @UseGuards(JwtAuthGuard, RolesGuard)
   async update(
     @Param() param: IdParam, 
@@ -124,7 +125,7 @@ export class CarsController extends BaseController {
   }
 
   @Delete(':id')
-  @Roles(['admin'])
+  @Roles([RolesEnum.ADMIN])
   @UseGuards(JwtAuthGuard, RolesGuard)
   async remove(
     @Param() param: IdParam,
@@ -150,7 +151,7 @@ export class CarsController extends BaseController {
 
 
   @Post('input/random')
-  @Roles(['admin'])
+  @Roles([RolesEnum.ADMIN])
   @UseGuards(JwtAuthGuard, RolesGuard)
   inputRandomCars() {
       return this.carsService.inputRandomCars();

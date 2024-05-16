@@ -131,7 +131,7 @@ constructor(
 
   async update(id: number, updateCityDto: UpdateCityDto) {
     try {
-      const findCity = await this.prisma.city.delete({
+      const findCity = await this.prisma.city.findUnique({
         where: {
           id: id
         }
