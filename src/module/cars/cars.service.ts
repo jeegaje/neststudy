@@ -1,29 +1,66 @@
-import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { CreateCarDto } from './dto/create-car.dto';
 import { UpdateCarDto } from './dto/update-car.dto';
 import { PrismaService } from 'src/core/services/prisma.service';
 import { fromFetch } from 'rxjs/fetch';
-import { catchError, concatMap, from, lastValueFrom, map, mergeMap, of, switchMap, tap, toArray } from 'rxjs';
-import { Car } from '@prisma/client';
+import { catchError, concatMap, from, lastValueFrom, map, max, mergeMap, of, switchMap, tap, toArray } from 'rxjs';
+import { Car, CarPhoto, Prisma } from '@prisma/client';
 import { ExceptionsHandler } from '@nestjs/core/exceptions/exceptions-handler';
 import { PaginationDto } from 'src/core/dto/pagination.dto';
+import { ResultCreateCarDto } from './dto/result-create-care.dto';
+import { plainToClass } from 'class-transformer';
+import { CarsServiceInterface } from './interfaces/cars-service.interface';
+import { FilterCarDto } from './dto/filter-car.dto';
+import { Response } from 'express';
+import { ExcelService } from 'src/core/services/excel.service';
+import { Workbook } from 'exceljs';
+import * as path from 'path'
 
 @Injectable()
-export class CarsService {
+export class CarsService implements CarsServiceInterface{
   constructor(
-    private readonly prisma: PrismaService
+    private readonly prisma: PrismaService,
+    private readonly excel: ExcelService
   ) {}
 
-  async create(createCarDto: CreateCarDto) {
-    const car = await this.prisma.car.create({
-      data: {
-        name: createCarDto.name,
-        color: createCarDto.color,
-        price: createCarDto.price,
-        status: createCarDto.status,
+  async create(createCarDto: CreateCarDto, files?: Array<Express.Multer.File>): Promise<ResultCreateCarDto> {
+    try {
+      let carPhotos: CarPhoto[] = []
+      const car: Car = await this.prisma.car.create({
+        data: {
+          name: createCarDto.name,
+          color: createCarDto.color,
+          price: createCarDto.price,
+          status: createCarDto.status,
+        }
+      });
+      if (files.length != 0) {
+        const carPhotos$ = from(files).pipe(
+          concatMap((file) => {
+            return from(this.prisma.carPhoto.create({
+              data: {
+                path: 'uploads/' + file.filename,
+                description: file.originalname,
+                car_id: car.id,
+                size: file.size
+              }
+            }))
+          }),
+          toArray()
+        )
+        carPhotos = await lastValueFrom(carPhotos$)
       }
-    });
-    return car;
+  
+      const result: ResultCreateCarDto = plainToClass(ResultCreateCarDto, {
+        ...car,
+        carPhotos
+      })
+  
+      return result;
+
+    } catch (error) {
+      throw new InternalServerErrorException(error.message)
+    }
   }
 
   async findAll() {
@@ -35,20 +72,40 @@ export class CarsService {
     }
   }
 
-  async findAllWithPagination(pagination: PaginationDto) {
+  async findAllWithFilter(filterCar: FilterCarDto) {
     try {
+      const { page, limit, orderBy, sortOrder, minPrice, maxPrice, name, ...filter } = filterCar
       const order: any = {}
 
-      if (pagination.orderBy) {
-        order[pagination.orderBy] = pagination.sortOrder
+      if (orderBy) {
+        order[orderBy] = sortOrder
       } else {
-        order['id'] = pagination.sortOrder
+        order['id'] = sortOrder
+      }
+
+      if (minPrice || maxPrice) {
+        Object.assign(filter, { 
+          price: {
+            gte: minPrice ?? undefined,
+            lte: maxPrice  ?? undefined
+          } 
+        })
+      }
+
+      if (name) {
+        Object.assign(filter, { 
+          name: {
+            contains: name,
+            mode: 'insensitive'
+          } 
+        })
       }
 
       const cars = await this.prisma.car.findMany({
-        take: pagination.limit,
-        skip: (pagination.page - 1) * pagination.limit,
-        orderBy: order
+        take: limit,
+        skip: (page - 1) * limit,
+        orderBy: order,
+        where: filter
       });
       return cars;
     } catch (error) {
@@ -152,7 +209,7 @@ export class CarsService {
               name: item.make + ' ' + item.model,
               color: item.color,
               price: item.price,
-              status: 'active'
+              status: 'available'
             }
             return from(this.create(data)).pipe(
               catchError((err, cought) => {
@@ -180,5 +237,30 @@ export class CarsService {
 
     return result
 
+  }
+
+  async exportCarsToExcel(response: Response) {
+    try {
+      const cars = await this.prisma.car.findMany()
+      await this.excel.generateExcelFile<Car>(cars, 'Cars Data', response)
+    } catch(error) {
+      throw new InternalServerErrorException(error.message)
+    }
+  }
+
+  async importCarsFromExcel(files: Array<Express.Multer.File>) {
+    try {
+      const data = await this.excel
+      .setFilePath(files[0].filename)
+      .buildToJsonWithDto<CreateCarDto>(CreateCarDto)
+
+
+      return data;
+    } catch(error) {
+      if (error instanceof BadRequestException) {
+        throw error
+      }
+      throw new InternalServerErrorException
+    }
   }
 }

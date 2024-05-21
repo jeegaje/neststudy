@@ -49,6 +49,16 @@ model Car {
   price   Int
   status  String
   rental  Rental[]
+  carPhoto CarPhoto[]
+}
+
+model CarPhoto {
+  id          Int      @id @default(autoincrement())
+  path        String 
+  size        Int
+  description String?
+  car_id      Int
+  car         Car      @relation(fields: [car_id], references: [id])
 }
 
 model Rental {

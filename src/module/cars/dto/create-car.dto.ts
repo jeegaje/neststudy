@@ -1,5 +1,7 @@
 import { ApiProperty } from "@nestjs/swagger"
-import { IsInt, IsNotEmpty, IsString } from "class-validator"
+import { Type } from "class-transformer"
+import { IsEnum, IsInt, IsNotEmpty, IsString } from "class-validator"
+import { CarStatus } from "../enum/car-status.enum"
 
 export class CreateCarDto {
     @ApiProperty()
@@ -15,11 +17,12 @@ export class CreateCarDto {
     @ApiProperty()
     @IsNotEmpty()
     @IsInt()
+    @Type(()=>Number)
     price: number
 
     @ApiProperty()
     @IsNotEmpty()
-    @IsString()
+    @IsEnum(CarStatus)
     status: string
     
 }
