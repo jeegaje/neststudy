@@ -9,6 +9,7 @@ import { RolesEnum } from 'src/core/enum/roles.enum';
 import { TotalCostRentalDto } from './dto/total-cost-rental.dto';
 import { getDistance } from 'geolib';
 import { MidtransService } from 'src/core/services/midtrans.service';
+import { v4  as uuidv4 } from 'uuid'
 
 @Injectable()
 export class RentalsService {
@@ -60,6 +61,7 @@ export class RentalsService {
       
       await this.prisma.payment.create({
         data: {
+          payment_id: `order-${rental.id}-${uuidv4()}`,
           paymentType: 'Mandiri',
           grossAmount: createRentalDto.rent_cost,
           status: 'pending',

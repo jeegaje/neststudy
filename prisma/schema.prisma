@@ -78,6 +78,7 @@ model Rental {
 
 model Payment {
   id          Int       @id @default(autoincrement())
+  payment_id  String    @unique
   paymentType String
   grossAmount Int
   status      String
